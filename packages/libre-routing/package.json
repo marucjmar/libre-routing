@@ -1,0 +1,12 @@
+{
+  "name": "libre-routing",
+  "version": "0.0.0",
+  "peerDependencies": {
+    "maplibre-gl": "^1.* || ^2.*"
+  },
+  "dependencies": {
+    "comlink": "^4.3.1",
+    "simplify-js": "1.2.4",
+    "@turf/turf": "6.5.0"
+  }
+}

@@ -1,4 +1,7 @@
 {
   "version": 2,
-  "projects": {}
+  "projects": {
+    "libre-routing": "packages/libre-routing",
+    "libre-routing-playground": "packages/libre-routing-playground"
+  }
 }

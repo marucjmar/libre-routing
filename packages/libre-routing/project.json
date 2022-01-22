@@ -1,0 +1,34 @@
+{
+  "root": "packages/libre-routing",
+  "sourceRoot": "packages/libre-routing/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/libre-routing/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/libre-routing"],
+      "options": {
+        "jestConfig": "packages/libre-routing/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/node:package",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/libre-routing",
+        "tsConfig": "packages/libre-routing/tsconfig.lib.json",
+        "packageJson": "packages/libre-routing/package.json",
+        "main": "packages/libre-routing/src/index.ts",
+        "assets": ["packages/libre-routing/*.md"]
+      }
+    }
+  },
+  "tags": ["scope:public", "type:util", "target:all"]
+}

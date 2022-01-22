@@ -1,6 +1,23 @@
 {
   "name": "libre-routing",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Marcin Lazar",
+  "keywords": [
+    "MapLibre GL",
+    "Routing",
+    "Directions",
+    "Route",
+    "OSMR",
+    "Here",
+    "Plugin",
+    "Map",
+    "js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marucjmar/libre-routing"
+  },
   "peerDependencies": {
     "maplibre-gl": "^1.* || ^2.*"
   },

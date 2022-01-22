@@ -24,15 +24,22 @@ export class AppComponent implements AfterViewInit {
       style: `https://assets.vector.hereapi.com/styles/berlin/base/mapbox/tilezen?apikey=${environment.hereApiKey}`,
     });
 
-    map.on('load', () => {
-      const routing = new LibreRouting({
-        dataProvider: new HereProvider({
-          apiKey: environment.hereApiKey,
-        }),
-        plugins: [new LayersPlugin(), new MousePlugin()],
-      });
+    const dataProvider = new HereProvider({ apiKey: environment.hereApiKey });
+    const routing = new LibreRouting({
+      dataProvider,
+      plugins: [new LayersPlugin(), new MousePlugin()],
+    });
 
+    routing.on('routeCalculated', console.log);
+    routing.on('routeSelected', console.log);
+    routing.on('waypoints', console.log);
+
+    map.on('load', () => {
       map.addControl(routing);
+
+      routing.addWaypoint([13, 51], 0);
+      routing.addWaypoint([14, 51], 0);
+      routing.recalculateRoute();
     });
   }
 }

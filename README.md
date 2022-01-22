@@ -2,6 +2,10 @@
 
 A full featured(performance focused) directions plugin for [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js) and [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js).
 
+## Demo
+
+[Demo App](https://marucjmar.github.io/libre-routing/)
+
 ## Usage
 
 ```js

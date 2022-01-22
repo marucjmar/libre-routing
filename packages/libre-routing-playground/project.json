@@ -36,12 +36,7 @@
               "maximumError": "4kb"
             }
           ],
-          "fileReplacements": [
-            {
-              "replace": "packages/libre-routing-playground/src/environments/environment.ts",
-              "with": "packages/libre-routing-playground/src/environments/environment.prod.ts"
-            }
-          ],
+          "fileReplacements": [],
           "outputHashing": "all"
         },
         "development": {
@@ -51,12 +46,7 @@
           "extractLicenses": false,
           "sourceMap": true,
           "namedChunks": true,
-          "fileReplacements": [
-            {
-              "replace": "packages/libre-routing-playground/src/environments/environment.ts",
-              "with": "packages/libre-routing-playground/src/environments/environment.dev.ts"
-            }
-          ]
+          "fileReplacements": []
         }
       },
       "defaultConfiguration": "production"

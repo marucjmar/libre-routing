@@ -6,6 +6,7 @@ import { featureCollection, lineString } from '@turf/helpers';
 import { RequestResponse } from '..';
 import { Requester } from '../../utils/requester';
 import { UnauthorizedError } from '../errors/unauthorized';
+import { SummaryRoute } from 'libre-routing';
 
 const requester = new Requester();
 
@@ -23,6 +24,9 @@ export const executor = {
       return {
         bounds: bbox(FC),
         rawData: data,
+        summary: {
+          routes: data.routes.map(summaryRoutes),
+        },
         geojson: {
           type: 'geojson',
           data: FC,
@@ -41,6 +45,30 @@ export const executor = {
       throw error;
     }
   },
+};
+
+const summaryRoutes = (route, routeIndex): SummaryRoute => {
+  const totalTime = route.sections
+    .map(
+      (s) =>
+        new Date(s.arrival.time).valueOf() -
+        new Date(s.departure.time).valueOf()
+    )
+    .reduce((a, b) => a + b, 0);
+
+  const distance = route.sections
+    .map((s) => s.summary.length)
+    .reduce((a, b) => a + b, 0);
+
+  return {
+    totalTime,
+    distance,
+    arriveTime: new Date(
+      route.sections[route.sections.length - 1].arrival.time
+    ),
+    departureTime: new Date(route.sections[0].departure.time),
+    id: routeIndex,
+  };
 };
 
 const serializeRoute = (route, routeIndex) => {

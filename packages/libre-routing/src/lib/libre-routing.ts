@@ -29,6 +29,7 @@ const defaultConfig: LibreRoutingOptions = {
 export class LibreRouting implements IControl {
   private _map!: Map;
   private _options: LibreRoutingOptions;
+  private _selectedRouteId?: number;
 
   public get map() {
     return this._map;
@@ -36,6 +37,10 @@ export class LibreRouting implements IControl {
 
   public get options(): LibreRoutingOptions {
     return this._options;
+  }
+
+  public get selectedRouteId(): number | undefined {
+    return this._selectedRouteId;
   }
 
   private dispatcher = new Dispatcher();
@@ -133,6 +138,7 @@ export class LibreRouting implements IControl {
     this.setSource(this.options.routeSourceId, data.geojson.data);
 
     this.dispatcher.fire('routeCalculated', this.data);
+    this._selectedRouteId = 0;
 
     if (this.waypoints.length === 2 && !skipCenter && firstData) {
       this.zoomToData();
@@ -182,6 +188,7 @@ export class LibreRouting implements IControl {
       };
     });
 
+    this._selectedRouteId = routeId;
     this.data.geojson.data.features = features;
 
     const newData = {
@@ -194,6 +201,7 @@ export class LibreRouting implements IControl {
     this.dispatcher.fire('routeSelected', {
       event: 'routeSelected',
       data: newData,
+      routeId,
     });
   }
 

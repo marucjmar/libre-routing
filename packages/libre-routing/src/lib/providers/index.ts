@@ -10,6 +10,15 @@ export type RequestResponse = {
   rawData: any;
   geojson: GeoJSONSourceSpecification;
   bounds?: BBox;
+  summary: { routes: SummaryRoute[] };
+};
+
+export type SummaryRoute = {
+  id: number;
+  totalTime: number;
+  distance: number;
+  arriveTime: Date;
+  departureTime: Date;
 };
 
 export type Route = {

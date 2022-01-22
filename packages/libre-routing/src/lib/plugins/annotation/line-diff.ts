@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { coordAll } from "@turf/meta";
-import { geometry, lineString, lineStrings } from "@turf/helpers";
-import { getCoord } from "@turf/invariant";
-import along from "@turf/along";
-import lineLength from "@turf/length";
-import bearing from "@turf/bearing";
+import { coordAll } from '@turf/meta';
+import { lineString } from '@turf/helpers';
+import { getCoord } from '@turf/invariant';
+import along from '@turf/along';
+import lineLength from '@turf/length';
+import bearing from '@turf/bearing';
 
 const TOLERANCE = 0.00001;
 const floatEquals = (f1, f2) => Math.abs(f1 - f2) < TOLERANCE;
@@ -17,7 +17,7 @@ const last = (array = []) => array[array.length - 1];
 const project = (ratio) => (ls) => {
   let line = ls;
 
-  if (ls.geometry.type === "MultiLineString") {
+  if (ls.geometry.type === 'MultiLineString') {
     line = lineString(ls.geometry.coordinates[0]);
 
     ls.geometry.coordinates.forEach((cords, index) => {
@@ -119,13 +119,13 @@ function getAnchor(position, otherBearing) {
   const axis =
     Math.abs(position.localLineBearing) < 45 ||
     Math.abs(position.localLineBearing) > 135
-      ? "vertical"
-      : "horizontal";
+      ? 'vertical'
+      : 'horizontal';
 
-  if (axis === "vertical") {
-    return otherBearing > 0 ? "left" : "right";
+  if (axis === 'vertical') {
+    return otherBearing > 0 ? 'left' : 'right';
   }
-  return Math.abs(otherBearing) < 90 ? "bottom" : "top";
+  return Math.abs(otherBearing) < 90 ? 'bottom' : 'top';
 }
 
 // routes can be a FeatureCollection or an array of Feature or Geometry

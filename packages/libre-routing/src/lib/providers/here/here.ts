@@ -62,7 +62,11 @@ export class HereProvider implements LibreRoutingDataProvider {
       destination: end.toString(),
       spans: [...(this.options.spans || []), 'names'].toString(),
       transportMode: this.options.transportMode || '',
-      return: [...(this.options.return || []), 'polyline'].toString(),
+      return: [
+        ...(this.options.return || []),
+        'polyline',
+        'summary',
+      ].toString(),
       alternatives: opts?.alternatives,
       apiKey: this.options.apiKey,
     };

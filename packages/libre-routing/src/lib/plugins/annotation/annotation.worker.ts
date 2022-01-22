@@ -1,8 +1,9 @@
-import bboxClip from "@turf/bbox-clip";
-import { FeatureCollection } from "@turf/helpers";
-import { expose } from "comlink";
-import { RequestResponse } from "../../providers";
-import { calculatePos, getDistinctSegments } from "./line-diff";
+import bboxClip from '@turf/bbox-clip';
+import { FeatureCollection } from '@turf/helpers';
+import { expose } from 'comlink';
+
+import { RequestResponse } from '../../providers';
+import { calculatePos, getDistinctSegments } from './line-diff';
 
 let chunks = [];
 
@@ -20,11 +21,14 @@ const api = {
         return bboxClip(chunk, [sw.lng, sw.lat, ne.lng, ne.lat]);
       })
       .filter(({ geometry: { coordinates } }) => coordinates.length > 0);
+
     const points = calculatePos(bboxChunks);
     const allInBbox = points.length === chunks.length;
 
-    return { points: calculatePos(bboxChunks), allInBbox };
+    return { points, allInBbox };
   },
 };
+
+export type AnnotationWorkerApi = typeof api;
 
 expose(api);

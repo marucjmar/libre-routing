@@ -7,3 +7,4 @@ export interface LibreRoutingPlugin {
 
 export * from './mouse/mouse.plugin';
 export * from './layers/layers.plugin';
+export * from './annotation/annotation.plugin';

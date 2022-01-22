@@ -11,6 +11,7 @@ import {
   MousePlugin,
   LayersPlugin,
   HereProvider,
+  AnnotationPlugin,
 } from 'libre-routing';
 import { environment } from '../environments/environment';
 
@@ -35,18 +36,20 @@ export class AppComponent implements AfterViewInit {
 
       const dataProvider = new HereProvider({ apiKey: environment.hereApiKey });
       const routing = new LibreRouting({
+        alternatives: 2,
         dataProvider,
         plugins: [
           new LayersPlugin(),
-          new MousePlugin({ calculateOnFly: true }),
+          new MousePlugin(),
+          new AnnotationPlugin(),
         ],
       });
 
       map.on('load', () => {
         map.addControl(routing);
 
-        routing.addWaypoint([13, 51], 0);
-        routing.addWaypoint([14, 51], 0);
+        routing.addWaypoint([18.8531001, 49.9539315], 0);
+        routing.addWaypoint([21.01178, 52.22977], 0);
 
         routing.recalculateRoute();
       });

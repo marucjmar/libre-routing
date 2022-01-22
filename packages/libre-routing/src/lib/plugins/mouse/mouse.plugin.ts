@@ -227,10 +227,10 @@ export class MousePlugin implements LibreRoutingPlugin {
         e.lngLat.toArray() as LngLatLike,
         this.waypointOrigin
       );
-    }
 
-    if (!this.options.calculateOnFly) {
-      this.recalculateHandler();
+      if (!this.options.calculateOnFly) {
+        this.recalculateHandler();
+      }
     }
 
     this.waypointOrigin = null;

@@ -45,7 +45,6 @@ export class LayersPlugin implements LibreRoutingPlugin {
     return {
       layers: [
         {
-          before: 'service-todo',
           style: routeLayer(
             LibreRoutingConsts.RouteLayerId,
             this.ctx.options.routeSourceId

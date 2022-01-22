@@ -1,94 +1,105 @@
-
-
 # LibreRouting
 
-This project was generated using [Nx](https://nx.dev).
+A full featured(performance focused) directions plugin for [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js) and [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js).
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+## Usage
 
-🔎 **Smart, Fast and Extensible Build System**
+```js
+import { Map } from  'maplibre-gl';
+import { LibreRouting, MousePlugin, LayersPlugin, HereProvider} from  'libre-routing';
 
-## Adding capabilities to your workspace
+const  map  =  new Map({...});
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+const dataProvider = new HereProvider({ apiKey: '1234' });
+const routing = new LibreRouting({
+	dataProvider,
+	plugins: [new  LayersPlugin(), new  MousePlugin()],
+});
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+routing.on('routeCalculated', console.log);
+routing.on('routeSelected', console.log);
+routing.on('waypoints', console.log);
 
-Below are our core plugins:
+map.on('load', () => {
+	map.addControl(routing);
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+	routing.addWaypoint([13, 51], 0);
+	routing.addWaypoint([14, 51], 0);
+	routing.recalculateRoute();
+});
+```
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+## Supported data providers
 
-## Generate an application
+- [x] [Here API](https://www.here.com/)
+- [ ] [MapBox API](https://docs.mapbox.com/help/glossary/directions-api/)
+- [ ] [Google API](https://developers.google.com/maps/documentation/directions/overview)
+- [ ] [OpenStreetMap API](https://wiki.openstreetmap.org/wiki/Routing)
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+:exclamation: Help grow the library by sharing your providers
 
-> You can use any of the plugins above to generate applications as well.
+## LibreRouting Class
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+### Config
 
-## Generate a library
+| Property                             | Default                            | Description                                                                                |
+| ------------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| `dataProvider`(Requred)              | -                                  | The request data provider                                                                  |
+| `alternatives`                       | `1`                                | The number of alternatives routes                                                          |
+| `skipAlternativesOnMultipleWaypoint` | `true`                             | If `true`, then when there is more than one waypoint, alternative routes will not be shown |
+| `firstRouteCenter`                   | `true`                             | When `true` then map fit zoom to route on first route calculation.                         |
+| `plugins`                            | `[]`                               | LibreRouting Plugins                                                                       |
+| `routeSourceId`                      | `'libre-routing-route-source'`     | Id of the route source on map                                                              |
+| `waypointsSourceId`                  | `'libre-routing-waypoints-source'` | Id of the waypoints source on map                                                          |
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+### Instance Properties
 
-> You can also use any of the plugins above to generate libraries as well.
+| Property  | Description                                  |
+| --------- | -------------------------------------------- |
+| `map`     | Return the MapLibre GL or Mapbox GL instance |
+| `options` | Return Config                                |
 
-Libraries are shareable across libraries and applications. They can be imported from `@libre-routing/mylib`.
+### Instance Methods
 
-## Development server
+| Method                                             | Description                             |
+| -------------------------------------------------- | --------------------------------------- |
+| `enable()`                                         | Enable library functions                |
+| `disable()`                                        | Disable library functions               |
+| `addWaypoint(point: [lng, lat], index: number)`    | Add route waypoint on specific index    |
+| `updateWaypoint(point: [lng, lat], index: number)` | Update waypoint on specific index       |
+| `removeWaypoint(index: number)`                    | Remove route waypoint on specific index |
+| `selectRoute(routeId)`                             | Select the alternative route            |
+| `on(event, callback)`                              | Subscribe to specific event             |
+| `off(event, callback)`                             | Unsubscribe from specific event         |
+| `zoomToData(opts)`                                 | Zoom to routes                          |
+| `async recalculateRoute(skipCenter = false)`       | Calculate routes between waypoints      |
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+### Events
 
-## Code scaffolding
+| Event             | Description                          | Data                 |
+| ----------------- | ------------------------------------ | -------------------- |
+| `routeCalculated` | Fire when routes calculated          | Provider data        |
+| `routeSelected`   | Fire when alternative route selected | Selected route data  |
+| `waypoints`       | Fire when waypoints updated          | Waypoints collection |
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+## Contribute
 
-## Build
+[Nx](https://nx.dev/using-nx/nx-cli) CLI Required
 
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+First install all depenencies by
 
-## Running unit tests
+```js
+npm i
+```
 
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
+### Build library
 
-Run `nx affected:test` to execute the unit tests affected by a change.
+```js
+npm run libre-routing:build
+```
 
-## Running end-to-end tests
+### Run playground app
 
-Run `ng e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx dep-graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+```js
+npm run start
+```

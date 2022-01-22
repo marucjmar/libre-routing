@@ -4,6 +4,8 @@
   "license": "MIT",
   "scripts": {
     "start": "nx run libre-routing-playground:serve",
+    "libre-routing:build": "nx run libre-routing:build",
+    "libre-routing:publish": "npm run libre-routing:build && npm publish ./dist/packages/libre-routing",
     "postinstall": "ngcc --properties es2015 browser module main"
   },
   "private": true,

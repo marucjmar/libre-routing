@@ -3,6 +3,11 @@
   "root": "packages/libre-routing-playground",
   "sourceRoot": "packages/libre-routing-playground/src",
   "prefix": "libre-routing",
+  "cli": {
+    "cache": {
+      "enabled": false
+    }
+  },
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",

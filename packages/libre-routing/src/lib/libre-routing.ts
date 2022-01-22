@@ -158,12 +158,17 @@ export class LibreRouting implements IControl {
   }
 
   public selectRoute(routeId: number) {
-    const features = this.data.geojson.data.features
-      .filter((feature) => feature.properties?.routeIndex === routeId)
-      .map((feature) => ({
+    const features = [...this.data.geojson.data.features].map((feature) => {
+      return {
         ...feature,
-        properties: { ...feature.properties, routeIndex: 0 },
-      }));
+        properties: {
+          ...feature.properties,
+          selected: feature.properties.routeIndex === routeId,
+        },
+      };
+    });
+
+    this.data.geojson.data.features = features;
 
     const newData = {
       ...this.data.geojson.data,
@@ -176,6 +181,28 @@ export class LibreRouting implements IControl {
       event: 'routeSelected',
       data: newData,
     });
+  }
+
+  public hideAlternativeRoutes() {
+    const features = this.data.geojson.data.features.filter(
+      ({ properties }) => properties.selected
+    );
+
+    const newData = {
+      ...this.data.geojson.data,
+      features,
+    };
+
+    this.setSource(this.options.routeSourceId, newData);
+  }
+
+  public showAllRoutes() {
+    const newData = {
+      ...this.data.geojson.data,
+      features: this.data.geojson.data.features,
+    };
+
+    this.setSource(this.options.routeSourceId, newData);
   }
 
   private updateWaypointsSource() {

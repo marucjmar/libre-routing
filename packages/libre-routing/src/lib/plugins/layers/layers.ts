@@ -8,12 +8,12 @@ export const routeLayer = (id, sourceId) => {
     layout: {
       'line-join': 'round',
       'line-cap': 'round',
-      'line-sort-key': ['case', ['==', ['get', 'routeIndex'], 0], 1, 0],
+      'line-sort-key': ['case', ['==', ['get', 'selected'], true], 1, 0],
     },
     paint: {
       'line-color': [
         'case',
-        ['==', ['get', 'routeIndex'], 0],
+        ['==', ['get', 'selected'], true],
         '#e207ff',
         '#33C9EB',
       ],

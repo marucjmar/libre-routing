@@ -50,7 +50,11 @@ const serializeRoute = (route, routeIndex) => {
     const simplified = simplify(polyline, 0.0001, true);
     const points = simplified.map((p) => [+p.y.toFixed(6), +p.x.toFixed(6)]);
 
-    return lineString(points, { waypoint: index, routeIndex: routeIndex });
+    return lineString(points, {
+      waypoint: index,
+      routeIndex: routeIndex,
+      selected: routeIndex === 0,
+    });
   });
 };
 

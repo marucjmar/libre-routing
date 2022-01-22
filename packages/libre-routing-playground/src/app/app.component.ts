@@ -39,15 +39,12 @@ export class AppComponent implements AfterViewInit {
         plugins: [new LayersPlugin(), new MousePlugin()],
       });
 
-      routing.on('routeCalculated', console.log);
-      routing.on('routeSelected', console.log);
-      routing.on('waypoints', console.log);
-
       map.on('load', () => {
         map.addControl(routing);
 
         routing.addWaypoint([13, 51], 0);
         routing.addWaypoint([14, 51], 0);
+
         routing.recalculateRoute();
       });
     });

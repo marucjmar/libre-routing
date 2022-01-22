@@ -78,11 +78,13 @@ map.on('load', () => {
 | `addWaypoint(point: [lng, lat], index: number)`    | Add route waypoint on specific index    |
 | `updateWaypoint(point: [lng, lat], index: number)` | Update waypoint on specific index       |
 | `removeWaypoint(index: number)`                    | Remove route waypoint on specific index |
+| `async recalculateRoute(skipCenter = false)`       | Calculate routes between waypoints      |
 | `selectRoute(routeId)`                             | Select the alternative route            |
 | `on(event, callback)`                              | Subscribe to specific event             |
 | `off(event, callback)`                             | Unsubscribe from specific event         |
 | `zoomToData(opts)`                                 | Zoom to routes                          |
-| `async recalculateRoute(skipCenter = false)`       | Calculate routes between waypoints      |
+| `hideAlternativeRoutes()`                          | Hide alternative routes                 |
+| `showAllRoutes()`                                  | Show all routes from data               |
 
 ### Events
 

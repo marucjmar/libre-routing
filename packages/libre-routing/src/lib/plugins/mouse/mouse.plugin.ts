@@ -110,7 +110,7 @@ export class MousePlugin implements LibreRoutingPlugin {
       (f) => f.source === this.ctx.options.routeSourceId
     );
 
-    if (route && route.properties.routeIndex !== 0) {
+    if (route && !route.properties.selected) {
       this.ctx.selectRoute(route.properties.routeIndex);
 
       return;
@@ -163,7 +163,7 @@ export class MousePlugin implements LibreRoutingPlugin {
       return;
     }
 
-    if (route.properties.routeIndex === 0) {
+    if (route.properties.selected) {
       if (this.map.getLayoutProperty('point', 'visibility') !== 'visible') {
         this.map.getCanvas().style.cursor = 'pointer';
 
@@ -205,7 +205,7 @@ export class MousePlugin implements LibreRoutingPlugin {
       (f) => f.source === this.ctx.options.routeSourceId
     );
 
-    if (route && route.properties.routeIndex === 0) {
+    if (route && route.properties.selected) {
       this.map.dragPan.disable();
       this.waypointOrigin = route.properties.waypoint + 1;
 

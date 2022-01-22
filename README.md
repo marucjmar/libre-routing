@@ -8,7 +8,7 @@ A full featured(performance focused) directions plugin for [MapLibre GL JS](http
 import { Map } from  'maplibre-gl';
 import { LibreRouting, MousePlugin, LayersPlugin, HereProvider} from  'libre-routing';
 
-const  map  =  new Map({...});
+const map = new Map({...});
 
 const dataProvider = new HereProvider({ apiKey: '1234' });
 const routing = new LibreRouting({

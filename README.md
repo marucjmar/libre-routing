@@ -6,6 +6,12 @@ A full featured(performance focused) directions plugin for [MapLibre GL JS](http
 
 [Demo App](https://marucjmar.github.io/libre-routing/)
 
+## Installation
+
+```js
+npm i --save libre-routing
+```
+
 ## Usage
 
 ```js

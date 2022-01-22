@@ -24,13 +24,7 @@
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "declaration": false,
-    "resolveJsonModule": true,
-    "module": "ES2020",
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "removeComments": true,
-    "sourceMap": true,
-    "target": "ES2020"
+    "resolveJsonModule": true
   },
   "angularCompilerOptions": {
     "strictInjectionParameters": true,

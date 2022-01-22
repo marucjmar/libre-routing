@@ -36,7 +36,10 @@ export class AppComponent implements AfterViewInit {
       const dataProvider = new HereProvider({ apiKey: environment.hereApiKey });
       const routing = new LibreRouting({
         dataProvider,
-        plugins: [new LayersPlugin(), new MousePlugin()],
+        plugins: [
+          new LayersPlugin(),
+          new MousePlugin({ calculateOnFly: true }),
+        ],
       });
 
       map.on('load', () => {

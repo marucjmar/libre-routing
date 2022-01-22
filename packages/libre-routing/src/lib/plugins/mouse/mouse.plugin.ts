@@ -43,7 +43,7 @@ export class MousePlugin implements LibreRoutingPlugin {
   private dispatcher: Dispatcher;
   private recalculateHandler = throttle(
     () => {
-      this.ctx!.recalculateRoute();
+      this.ctx!.recalculateRoute().catch(() => null);
     },
     100,
     { leading: true, trailing: true }
@@ -53,7 +53,7 @@ export class MousePlugin implements LibreRoutingPlugin {
 
   private set waypointOrigin(value: number | null | undefined) {
     this._waypointOrigin = value;
-    this._dirty = !value;
+    this._dirty = !!value?.toString();
     this.fire('dirty', this._dirty);
   }
 
@@ -65,7 +65,7 @@ export class MousePlugin implements LibreRoutingPlugin {
     return this._dirty;
   }
 
-  constructor(options?: MousePluginOptions) {
+  constructor(options?: Partial<MousePluginOptions>) {
     this.dispatcher = new Dispatcher();
     this.options = { ...defaultConfig, ...options };
   }
@@ -218,9 +218,21 @@ export class MousePlugin implements LibreRoutingPlugin {
     }
   }
 
-  private onMouseup() {
+  private onMouseup(e) {
     this.map.dragPan.enable();
     this.map.setLayoutProperty('point', 'visibility', 'none');
+
+    if (this.waypointOrigin != null) {
+      this.updateWaypoint(
+        e.lngLat.toArray() as LngLatLike,
+        this.waypointOrigin
+      );
+    }
+
+    if (!this.options.calculateOnFly) {
+      this.recalculateHandler();
+    }
+
     this.waypointOrigin = null;
   }
 
@@ -245,10 +257,12 @@ export class MousePlugin implements LibreRoutingPlugin {
   }
 
   private updateWaypoint(pos: LngLatLike, waypointId: number) {
-    this.ctx.updateWaypoint(pos, waypointId);
+    const updateResult = this.ctx.updateWaypoint(pos, waypointId);
 
-    if (!this.dirty || this.options.calculateOnFly) {
+    if (updateResult && (!this.dirty || this.options.calculateOnFly)) {
       this.recalculateHandler();
     }
+
+    return updateResult;
   }
 }

@@ -81,9 +81,19 @@ export class LibreRouting implements IControl {
     point: LngLatLike,
     index: number,
     mappedPos?: LngLatLike
-  ) {
+  ): boolean {
+    if (
+      !this.waypoints[index] ||
+      (this.waypoints[index].originalPos[0] === point[0] &&
+        this.waypoints[index].originalPos[1] === point[1])
+    ) {
+      return false;
+    }
+
     this.waypoints[index] = { originalPos: point, mappedPos } as any;
     this.updateWaypointsSource();
+
+    return true;
   }
 
   public removeWaypoint(index: number) {
@@ -91,6 +101,10 @@ export class LibreRouting implements IControl {
     newArr.splice(index, 1);
     this.waypoints = newArr;
     this.updateWaypointsSource();
+  }
+
+  public getWaypoint(waypointId: number) {
+    return this._waypoints[waypointId];
   }
 
   public async recalculateRoute(skipCenter = false) {

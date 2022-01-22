@@ -16,14 +16,14 @@ npm i --save libre-routing
 
 ```js
 import { Map } from  'maplibre-gl';
-import { LibreRouting, MousePlugin, LayersPlugin, HereProvider} from  'libre-routing';
+import { LibreRouting, MousePlugin, LayersPlugin, HereProvider, AnnotationPlugin } from  'libre-routing';
 
 const map = new Map({...});
 
 const dataProvider = new HereProvider({ apiKey: '1234' });
 const routing = new LibreRouting({
   dataProvider,
-  plugins: [new  LayersPlugin(), new  MousePlugin()],
+  plugins: [new  LayersPlugin(), new  MousePlugin(), new AnnotationPlugin()],
 });
 
 routing.on('routeCalculated', console.log);

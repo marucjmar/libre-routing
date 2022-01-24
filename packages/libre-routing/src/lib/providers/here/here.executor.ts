@@ -7,16 +7,22 @@ import { RequestResponse } from '..';
 import { Requester } from '../../utils/requester';
 import { UnauthorizedError } from '../errors/unauthorized';
 import { SummaryRoute } from 'libre-routing';
+import { selectRouteByStrategy } from '../../utils/functional';
 
-const requester = new Requester();
+export class HereExecutor {
+  private readonly requester = new Requester();
 
-export const executor = {
   async request(opts): Promise<RequestResponse> {
     try {
-      const data = await requester.request(opts.url);
+      const data = await this.requester.request(opts.url);
+      const routesSummary: SummaryRoute[] = data.routes.map(summaryRoutes);
+      const selectedRouteId = selectRouteByStrategy(
+        routesSummary,
+        opts.selectRouteStrategy
+      );
 
       const features = data.routes
-        .map((route, index) => serializeRoute(route, index))
+        .map((route, index) => serializeRoute(route, index, selectedRouteId))
         .reduce((acc, c) => [...acc, ...c], []);
 
       const FC = featureCollection(features);
@@ -25,7 +31,8 @@ export const executor = {
         bounds: bbox(FC),
         rawData: data,
         summary: {
-          routes: data.routes.map(summaryRoutes),
+          routes: routesSummary,
+          selectedRouteId,
         },
         geojson: {
           type: 'geojson',
@@ -44,8 +51,12 @@ export const executor = {
 
       throw error;
     }
-  },
-};
+  }
+
+  hasPendingRequests() {
+    return this.requester.hasPendingRequests;
+  }
+}
 
 const summaryRoutes = (route, routeIndex): SummaryRoute => {
   const totalTime = route.sections
@@ -71,7 +82,7 @@ const summaryRoutes = (route, routeIndex): SummaryRoute => {
   };
 };
 
-const serializeRoute = (route, routeIndex) => {
+const serializeRoute = (route, routeIndex, selectedRouteId) => {
   return route.sections.map((section, index) => {
     const decoded = decode(section.polyline);
     const polyline = decoded.polyline.map(([x, y]) => ({ x, y }));
@@ -81,9 +92,7 @@ const serializeRoute = (route, routeIndex) => {
     return lineString(points, {
       waypoint: index,
       routeIndex: routeIndex,
-      selected: routeIndex === 0,
+      selected: selectedRouteId === routeIndex,
     });
   });
 };
-
-export type HereProviderWorker = typeof executor;

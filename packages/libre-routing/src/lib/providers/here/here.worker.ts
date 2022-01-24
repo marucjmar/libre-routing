@@ -1,4 +1,6 @@
 import { expose } from 'comlink';
-import { executor } from './here.executor';
+import { HereExecutor } from './here.executor';
+
+const executor = new HereExecutor();
 
 expose(executor);

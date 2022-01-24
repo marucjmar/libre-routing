@@ -54,27 +54,23 @@ export class AnnotationPlugin implements LibreRoutingPlugin {
 
   onAdd(ctx: LibreRouting) {
     const debounced = debounce(() => this.recalculate(), 200, false);
-    const regenerateDebounced = debounce(
-      async (data) => {
-        await this.workerApi.createChunks(data);
-
-        await this.recalculate(true);
-      },
-      300,
-      false
-    );
 
     this.ctx = ctx;
+    this.map = ctx.map;
 
     this.ctx.on('routeCalculated', async (data) => {
       this.data = data;
       this.destroyView();
 
-      //@ts-ignore
-      regenerateDebounced(data);
-    });
+      const pendingRequests =
+        await ctx.options.dataProvider.hasPendingRequests();
 
-    this.map = ctx.map;
+      if (!pendingRequests) {
+        await this.workerApi.createChunks(data);
+
+        await this.recalculate(true);
+      }
+    });
 
     this.map.on('moveend', async () => {
       debounced();

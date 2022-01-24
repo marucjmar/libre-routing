@@ -1,6 +1,6 @@
 import { wrap } from 'comlink';
 
-import { executor, HereProviderWorker } from './here.executor';
+import { HereExecutor } from './here.executor';
 import type { LibreRoutingDataProvider } from '..';
 
 type Options = {
@@ -20,7 +20,7 @@ const defaultOptions: Partial<Options> = {
 
 export class HereProvider implements LibreRoutingDataProvider {
   private worker?: Worker;
-  private executorAPI: HereProviderWorker;
+  private executorAPI: HereExecutor;
   private options: Options;
 
   constructor(options: Options) {
@@ -31,9 +31,10 @@ export class HereProvider implements LibreRoutingDataProvider {
         type: 'module',
       });
 
-      this.executorAPI = wrap(this.worker);
+      //@ts-ignore
+      this.executorAPI = wrap<HereExecutor>(this.worker);
     } else {
-      this.executorAPI = executor;
+      this.executorAPI = new HereExecutor();
     }
   }
 
@@ -46,7 +47,11 @@ export class HereProvider implements LibreRoutingDataProvider {
   request(waypoints, opts) {
     const url = this.buildUrl(waypoints, opts);
 
-    return this.executorAPI.request({ url });
+    return this.executorAPI.request({ url, ...opts });
+  }
+
+  public async hasPendingRequests() {
+    return this.executorAPI.hasPendingRequests();
   }
 
   public setOption(option: string, value: any) {

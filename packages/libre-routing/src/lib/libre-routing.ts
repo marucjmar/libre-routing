@@ -4,9 +4,12 @@ import { featureCollection, point } from '@turf/helpers';
 import { LibreRoutingDataProvider } from './providers';
 import { Dispatcher } from './utils/dispatcher';
 import { LibreRoutingPlugin } from './plugins';
+import { selectRouteByStrategy } from './utils/functional';
+
+export type SelectRouteStrategy = 'fastest' | 'shortest' | 'none';
 
 type LibreRoutingOptions = {
-  dataProvider?: LibreRoutingDataProvider;
+  dataProvider: LibreRoutingDataProvider;
   alternatives: number;
   skipAlternativesOnMultipleWaypoint: boolean;
   firstRouteCenter: boolean;
@@ -15,15 +18,18 @@ type LibreRoutingOptions = {
   >;
   routeSourceId: string;
   waypointsSourceId: string;
+  selectRouteStrategy: SelectRouteStrategy;
 };
 
 const defaultConfig: LibreRoutingOptions = {
+  dataProvider: null as any,
   alternatives: 1,
   skipAlternativesOnMultipleWaypoint: true,
   firstRouteCenter: true,
   plugins: [],
   routeSourceId: 'libre-routing-route-source',
   waypointsSourceId: 'libre-routing-waypoints-source',
+  selectRouteStrategy: 'fastest',
 };
 
 export class LibreRouting implements IControl {
@@ -127,6 +133,7 @@ export class LibreRouting implements IControl {
 
     const data = await this.options.dataProvider.request(this.waypoints, {
       alternatives,
+      selectRouteStrategy: this.options.selectRouteStrategy,
     });
 
     if (!data) return;
@@ -138,7 +145,14 @@ export class LibreRouting implements IControl {
     this.setSource(this.options.routeSourceId, data.geojson.data);
 
     this.dispatcher.fire('routeCalculated', this.data);
-    this._selectedRouteId = 0;
+
+    if (data.summary.selectedRouteId) {
+      this.dispatcher.fire('routeSelected', {
+        event: 'routeSelected',
+        data: this.data,
+        routeId: data.summary.selectedRouteId,
+      });
+    }
 
     if (this.waypoints.length === 2 && !skipCenter && firstData) {
       this.zoomToData();
@@ -178,7 +192,7 @@ export class LibreRouting implements IControl {
   }
 
   public selectRoute(routeId: number) {
-    const features = [...this.data.geojson.data.features].map((feature) => {
+    const features = this.data.geojson.data.features.map((feature) => {
       return {
         ...feature,
         properties: {
@@ -225,6 +239,17 @@ export class LibreRouting implements IControl {
     };
 
     this.setSource(this.options.routeSourceId, newData);
+  }
+
+  public selectRouteByStrategy(strategy: SelectRouteStrategy) {
+    const routeId = selectRouteByStrategy(this.data.summary.routes, strategy);
+
+    if (routeId !== null) {
+      this.selectRoute(routeId);
+      return true;
+    }
+
+    return false;
   }
 
   private updateWaypointsSource() {

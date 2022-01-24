@@ -3,12 +3,16 @@ import { wrap } from 'comlink';
 import { HereExecutor } from './here.executor';
 import type { LibreRoutingDataProvider } from '..';
 
+export type SelectRouteStrategy = 'fastest' | 'shortest' | 'cheapest' | 'none';
+
 type Options = {
   worker?: boolean;
   apiKey: string;
+  selectRouteStrategy: SelectRouteStrategy;
   baseUrl?: string;
   spans?: string[];
   return?: string[];
+  currency?: string;
   transportMode?: string;
 };
 
@@ -16,6 +20,7 @@ const defaultOptions: Partial<Options> = {
   baseUrl: 'https://router.hereapi.com/v8/routes',
   transportMode: 'car',
   worker: true,
+  selectRouteStrategy: 'fastest',
 };
 
 export class HereProvider implements LibreRoutingDataProvider {
@@ -31,7 +36,7 @@ export class HereProvider implements LibreRoutingDataProvider {
         type: 'module',
       });
 
-      //@ts-ignore
+      // @ts-ignore
       this.executorAPI = wrap<HereExecutor>(this.worker);
     } else {
       this.executorAPI = new HereExecutor();
@@ -47,7 +52,7 @@ export class HereProvider implements LibreRoutingDataProvider {
   request(waypoints, opts) {
     const url = this.buildUrl(waypoints, opts);
 
-    return this.executorAPI.request({ url, ...opts });
+    return this.executorAPI.request({ url, ...opts, ...this.options });
   }
 
   public async hasPendingRequests() {
@@ -74,9 +79,14 @@ export class HereProvider implements LibreRoutingDataProvider {
       ].toString(),
       alternatives: opts?.alternatives,
       apiKey: this.options.apiKey,
+      ...(this.options.currency ? { currency: this.options.currency } : null),
     };
 
-    let qp = new URLSearchParams(qpObj).toString();
+    if (this.options.selectRouteStrategy === 'cheapest') {
+      qpObj.return += ',tolls';
+    }
+
+    let qp = new URLSearchParams(qpObj as any).toString();
 
     if (waypoints.length > 2) {
       qp += `&${this.serializeWaypoints(waypoints)}`;

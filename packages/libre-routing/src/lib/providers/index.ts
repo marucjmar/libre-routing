@@ -25,6 +25,7 @@ export type SummaryRoute = {
   distance: number;
   arriveTime: Date;
   departureTime: Date;
+  cost?: number;
 };
 
 export type Route = {

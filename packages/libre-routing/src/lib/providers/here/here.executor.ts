@@ -3,11 +3,10 @@ import * as simplify from 'simplify-js';
 import bbox from '@turf/bbox';
 import { featureCollection, lineString } from '@turf/helpers';
 
-import { RequestResponse } from '..';
+import { RequestResponse, SummaryRoute } from '..';
 import { Requester } from '../../utils/requester';
 import { UnauthorizedError } from '../errors/unauthorized';
-import { SummaryRoute } from 'libre-routing';
-import { selectRouteByStrategy } from '../../utils/functional';
+import { selectRouteByStrategy } from './utils/select-route-strategy';
 
 export class HereExecutor {
   private readonly requester = new Requester();
@@ -71,9 +70,18 @@ const summaryRoutes = (route, routeIndex): SummaryRoute => {
     .map((s) => s.summary.length)
     .reduce((a, b) => a + b, 0);
 
+  const cost = route.sections.reduce((acc, section) => {
+    (section.tolls || []).forEach((toll) =>
+      (toll.fares || []).forEach((fare) => (acc += fare.price.value))
+    );
+
+    return acc;
+  }, 0);
+
   return {
     totalTime,
     distance,
+    cost,
     arriveTime: new Date(
       route.sections[route.sections.length - 1].arrival.time
     ),

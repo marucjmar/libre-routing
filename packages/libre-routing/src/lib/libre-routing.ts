@@ -4,9 +4,6 @@ import { featureCollection, point } from '@turf/helpers';
 import { LibreRoutingDataProvider } from './providers';
 import { Dispatcher } from './utils/dispatcher';
 import { LibreRoutingPlugin } from './plugins';
-import { selectRouteByStrategy } from './utils/functional';
-
-export type SelectRouteStrategy = 'fastest' | 'shortest' | 'none';
 
 type LibreRoutingOptions = {
   dataProvider: LibreRoutingDataProvider;
@@ -18,7 +15,6 @@ type LibreRoutingOptions = {
   >;
   routeSourceId: string;
   waypointsSourceId: string;
-  selectRouteStrategy: SelectRouteStrategy;
 };
 
 const defaultConfig: LibreRoutingOptions = {
@@ -29,7 +25,6 @@ const defaultConfig: LibreRoutingOptions = {
   plugins: [],
   routeSourceId: 'libre-routing-route-source',
   waypointsSourceId: 'libre-routing-waypoints-source',
-  selectRouteStrategy: 'fastest',
 };
 
 export class LibreRouting implements IControl {
@@ -133,7 +128,6 @@ export class LibreRouting implements IControl {
 
     const data = await this.options.dataProvider.request(this.waypoints, {
       alternatives,
-      selectRouteStrategy: this.options.selectRouteStrategy,
     });
 
     if (!data) return;
@@ -239,17 +233,6 @@ export class LibreRouting implements IControl {
     };
 
     this.setSource(this.options.routeSourceId, newData);
-  }
-
-  public selectRouteByStrategy(strategy: SelectRouteStrategy) {
-    const routeId = selectRouteByStrategy(this.data.summary.routes, strategy);
-
-    if (routeId !== null) {
-      this.selectRoute(routeId);
-      return true;
-    }
-
-    return false;
   }
 
   private updateWaypointsSource() {

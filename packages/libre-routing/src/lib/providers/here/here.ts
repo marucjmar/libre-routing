@@ -77,7 +77,7 @@ export class HereProvider implements LibreRoutingDataProvider {
         'polyline',
         'summary',
       ].toString(),
-      alternatives: opts?.alternatives,
+      alternatives: opts?.alternatives ?? 0,
       apiKey: this.options.apiKey,
       ...(this.options.currency ? { currency: this.options.currency } : null),
     };

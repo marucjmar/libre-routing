@@ -1,15 +1,19 @@
 export class Requester {
-  private latestResponseExecutionTime = 0;
+  private latestResponseId = 0;
+  private lastResponseId = 0;
   private buffer: AbortController[] = [];
   private maxBuffer = 4;
+  private pending = false;
 
   public get hasPendingRequests(): boolean {
-    return this.buffer.length !== 0;
+    return this.pending;
   }
 
   public async request(url, params?) {
     const controller = new AbortController();
-    const executionTime = Date.now();
+    const executionId = Date.now();
+    this.lastResponseId = executionId;
+    this.pending = true;
 
     if (this.buffer.length > this.maxBuffer) {
       this.buffer[0].abort();
@@ -23,23 +27,21 @@ export class Requester {
       signal: controller.signal,
     });
 
+    this.cleanBuffer(controller);
+
     if (response.status !== 200) {
-      this.cleanBuffer(controller);
       throw response;
     }
 
-    if (this.latestResponseExecutionTime > executionTime) {
-      this.cleanBuffer(controller);
+    if (this.latestResponseId > executionId) {
       throw new Error('Prev response');
     }
 
-    this.latestResponseExecutionTime = executionTime;
+    this.pending = this.lastResponseId !== executionId;
 
-    const data = await response.json();
+    this.latestResponseId = executionId;
 
-    this.cleanBuffer(controller);
-
-    return data;
+    return await response.json();
   }
 
   private cleanBuffer(controller) {

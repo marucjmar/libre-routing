@@ -1,21 +1,26 @@
-import type { BBox } from '@turf/helpers';
-import type { SelectRouteStrategy } from 'libre-routing';
-import type { GeoJSONSourceSpecification } from 'maplibre-gl';
+import type { SelectRouteStrategy } from './here/here';
+import type { GeoJSONSourceSpecification, LngLatBoundsLike } from 'maplibre-gl';
+import type { FeatureCollection, Geometry } from '@turf/helpers';
 
 export interface LibreRoutingDataProvider {
   request: (
     waypoints: any,
     opts: { selectRouteStrategy?: SelectRouteStrategy; alternatives: number }
-  ) => Promise<RequestResponse>;
+  ) => Promise<LibreRoutingDataResponse>;
   destroy(): void;
 
   hasPendingRequests(): Promise<boolean>;
 }
 
-export type RequestResponse = {
+export type LibreRoutingDataResponse = {
   rawData: any;
-  geojson: GeoJSONSourceSpecification;
-  bounds?: BBox;
+  geojson: GeoJSONSourceSpecification & {
+    data: FeatureCollection<
+      Geometry,
+      { routeIndex: number; selected: boolean }
+    >;
+  };
+  bounds?: LngLatBoundsLike;
   summary: { routes: SummaryRoute[]; selectedRouteId?: number | null };
 };
 

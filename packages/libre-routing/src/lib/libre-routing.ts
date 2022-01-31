@@ -1,9 +1,19 @@
-import { FitBoundsOptions, IControl, LngLatLike, Map } from 'maplibre-gl';
+import { FitBoundsOptions, IControl, Map } from 'maplibre-gl';
 import { featureCollection, point } from '@turf/helpers';
 
-import { LibreRoutingDataProvider } from './providers';
+import {
+  LibreRoutingDataProvider,
+  LibreRoutingDataResponse,
+} from './providers';
 import { Dispatcher } from './utils/dispatcher';
 import { LibreRoutingPlugin } from './plugins';
+import { randomId } from './utils/random';
+
+export type LngLatPosition = [number, number];
+export type Waypoint = {
+  originalPos: LngLatPosition;
+  mappedPos?: LngLatPosition;
+};
 
 type LibreRoutingOptions = {
   dataProvider: LibreRoutingDataProvider;
@@ -15,6 +25,7 @@ type LibreRoutingOptions = {
   >;
   routeSourceId: string;
   waypointsSourceId: string;
+  uniqueKey?: string;
 };
 
 const defaultConfig: LibreRoutingOptions = {
@@ -24,13 +35,26 @@ const defaultConfig: LibreRoutingOptions = {
   firstRouteCenter: true,
   plugins: [],
   routeSourceId: 'libre-routing-route-source',
-  waypointsSourceId: 'libre-routing-waypoints-source',
+  waypointsSourceId: 'libre-routing-waypoints',
+};
+
+export const resolveOptions = (options: LibreRoutingOptions) => {
+  return {
+    ...options,
+    routeSourceId: `libre-routing-route-source-${options.uniqueKey}`,
+    waypointsSourceId: `libre-routing-waypoints-${options.uniqueKey}`,
+  };
 };
 
 export class LibreRouting implements IControl {
   private _map!: Map;
   private _options: LibreRoutingOptions;
   private _selectedRouteId?: number;
+
+  private dispatcher = new Dispatcher();
+  private _data!: LibreRoutingDataResponse;
+
+  private _waypoints: Waypoint[] = [];
 
   public get map() {
     return this._map;
@@ -40,26 +64,30 @@ export class LibreRouting implements IControl {
     return this._options;
   }
 
+  public get data() {
+    return this._data;
+  }
+
   public get selectedRouteId(): number | undefined {
     return this._selectedRouteId;
   }
-
-  private dispatcher = new Dispatcher();
-  private data: any;
-
-  private _waypoints: any[] = [];
 
   private set waypoints(value) {
     this._waypoints = value;
     this.dispatcher.fire('waypoints', this._waypoints);
   }
 
-  private get waypoints(): any[] {
+  private get waypoints(): Waypoint[] {
     return this._waypoints;
   }
 
   constructor(options: Partial<LibreRoutingOptions>) {
-    this._options = { ...defaultConfig, ...options };
+    this._options = {
+      ...{ uniqueKey: randomId() },
+      ...defaultConfig,
+      ...options,
+    };
+    this._options = resolveOptions(this._options);
   }
 
   public onAdd(map: Map) {
@@ -73,7 +101,16 @@ export class LibreRouting implements IControl {
     this.disable();
   }
 
-  public addWaypoint(point: LngLatLike, index: number, mappedPos?: LngLatLike) {
+  public setWaypoints(waypoints: LngLatPosition[]) {
+    this.waypoints = waypoints.map((pos) => <Waypoint>{ originalPos: pos });
+    this.updateWaypointsSource();
+  }
+
+  public addWaypoint(
+    point: LngLatPosition,
+    index: number,
+    mappedPos?: LngLatPosition
+  ) {
     const newArr = [...this.waypoints];
     newArr.splice(index, 0, {
       originalPos: point,
@@ -84,9 +121,9 @@ export class LibreRouting implements IControl {
   }
 
   public updateWaypoint(
-    point: LngLatLike,
+    point: LngLatPosition,
     index: number,
-    mappedPos?: LngLatLike
+    mappedPos?: LngLatPosition
   ): boolean {
     if (
       !this.waypoints[index] ||
@@ -134,13 +171,13 @@ export class LibreRouting implements IControl {
 
     const firstData = !this.data;
 
-    this.data = data;
+    this._data = data;
 
     this.setSource(this.options.routeSourceId, data.geojson.data);
 
     this.dispatcher.fire('routeCalculated', this.data);
 
-    if (data.summary.selectedRouteId) {
+    if (data.summary.selectedRouteId != null) {
       this.dispatcher.fire('routeSelected', {
         event: 'routeSelected',
         data: this.data,
@@ -164,11 +201,11 @@ export class LibreRouting implements IControl {
     }
   }
 
-  public on(...args: [string, Function]) {
+  public on(...args: [string, (...args: any[]) => void | Promise<void>]) {
     this.dispatcher.on(...args);
   }
 
-  public off(...args: [string, Function]) {
+  public off(...args: [string, (...args: any[]) => void | Promise<void>]) {
     this.dispatcher.off(...args);
   }
 
@@ -233,6 +270,10 @@ export class LibreRouting implements IControl {
     };
 
     this.setSource(this.options.routeSourceId, newData);
+  }
+
+  public getUniqueName(name: string) {
+    return `${name}-${this.options.uniqueKey}`;
   }
 
   private updateWaypointsSource() {

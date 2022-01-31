@@ -1,17 +1,23 @@
 import { decode } from '@liberty-rider/flexpolyline';
 import * as simplify from 'simplify-js';
 import bbox from '@turf/bbox';
-import { featureCollection, lineString } from '@turf/helpers';
+import {
+  featureCollection,
+  lineString,
+  LineString,
+  Geometry,
+} from '@turf/helpers';
 
-import { RequestResponse, SummaryRoute } from '..';
+import { LibreRoutingDataResponse, SummaryRoute } from '..';
 import { Requester } from '../../utils/requester';
 import { UnauthorizedError } from '../errors/unauthorized';
 import { selectRouteByStrategy } from './utils/select-route-strategy';
+import { LngLatBoundsLike } from 'maplibre-gl';
 
 export class HereExecutor {
   private readonly requester = new Requester();
 
-  async request(opts): Promise<RequestResponse> {
+  async request(opts): Promise<LibreRoutingDataResponse> {
     try {
       const data = await this.requester.request(opts.url);
       const routesSummary: SummaryRoute[] = data.routes.map(summaryRoutes);
@@ -24,10 +30,13 @@ export class HereExecutor {
         .map((route, index) => serializeRoute(route, index, selectedRouteId))
         .reduce((acc, c) => [...acc, ...c], []);
 
-      const FC = featureCollection(features);
+      const FC = featureCollection<
+        Geometry,
+        { waypoint: number; routeIndex: number; selected: boolean }
+      >(features);
 
       return {
-        bounds: bbox(FC),
+        bounds: bbox(FC) as LngLatBoundsLike,
         rawData: data,
         summary: {
           routes: routesSummary,
@@ -90,7 +99,11 @@ const summaryRoutes = (route, routeIndex): SummaryRoute => {
   };
 };
 
-const serializeRoute = (route, routeIndex, selectedRouteId) => {
+const serializeRoute = (
+  route,
+  routeIndex,
+  selectedRouteId
+): Array<LineString[]> => {
   return route.sections.map((section, index) => {
     const decoded = decode(section.polyline);
     const polyline = decoded.polyline.map(([x, y]) => ({ x, y }));

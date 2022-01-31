@@ -35,10 +35,10 @@ export class AnnotationPopupComponent implements AnnotationPopupComponentI {
       ${icon}
       <div style="display: inline-block;  line-height: initial;">
         <div style="margin-left: 8px; font-size: .9rem">${formatMS(
-          data.summary.routes[routeId].totalTime
+          data.summary.routes[routeId]?.totalTime
         )}</div>
         <span style="margin-left: 8px; font-size: .7rem;">${(
-          data.summary.routes[routeId].distance / 1000
+          data.summary.routes[routeId]?.distance / 1000
         ).toFixed(1)} km</span>
       </div>
     `;

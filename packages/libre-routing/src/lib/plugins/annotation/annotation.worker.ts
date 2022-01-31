@@ -2,13 +2,13 @@ import bboxClip from '@turf/bbox-clip';
 import { FeatureCollection } from '@turf/helpers';
 import { expose } from 'comlink';
 
-import { RequestResponse } from '../../providers';
+import { LibreRoutingDataResponse } from '../../providers';
 import { calculatePos, getDistinctSegments } from './line-diff';
 
 let chunks = [];
 
 const api = {
-  createChunks(data: RequestResponse) {
+  createChunks(data: LibreRoutingDataResponse) {
     const fc: FeatureCollection = data.geojson.data as FeatureCollection;
 
     // @ts-ignore

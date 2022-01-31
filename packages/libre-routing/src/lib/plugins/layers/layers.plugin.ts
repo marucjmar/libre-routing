@@ -28,7 +28,7 @@ export class LayersPlugin implements LibreRoutingPlugin {
 
   onAdd(ctx: LibreRouting) {
     this.ctx = ctx;
-    this.options = mergeDeep(this.defaultConfig(), this._options);
+    this.options = mergeDeep(this.defaultConfig(ctx), this._options);
 
     this.options.layers.forEach((layer) => {
       // @ts-ignore
@@ -41,18 +41,18 @@ export class LayersPlugin implements LibreRoutingPlugin {
     this.map.removeLayer('waypoints');
   }
 
-  private defaultConfig(): LayersPluginOptions {
+  private defaultConfig(ctx: LibreRouting): LayersPluginOptions {
     return {
       layers: [
         {
           style: routeLayer(
-            LibreRoutingConsts.RouteLayerId,
+            ctx.getUniqueName(LibreRoutingConsts.RouteLayerId),
             this.ctx.options.routeSourceId
           ),
         },
         {
           style: waypointsLayer(
-            LibreRoutingConsts.WaypointsLayerId,
+            ctx.getUniqueName(LibreRoutingConsts.WaypointsLayerId),
             this.ctx.options.waypointsSourceId
           ),
         },

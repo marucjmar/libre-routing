@@ -3,7 +3,7 @@ import { LibreRouting } from '../../libre-routing';
 import { BBox, featureCollection, point } from '@turf/helpers';
 import { wrap } from 'comlink';
 import bbox from '@turf/bbox';
-import { debounce, throttle } from '../../utils/concurency';
+import { debounce } from '../../utils/concurency';
 import { LibreRoutingPlugin } from '..';
 import { LibreRoutingConsts } from '../../consts';
 import { AnnotationWorkerApi } from './annotation.worker';
@@ -26,6 +26,16 @@ const defaultConfig: AnnotationPluginOptions = {
   componentFactory(routeId, data, ctx) {
     return new AnnotationPopupComponent(routeId, data, ctx);
   },
+};
+
+const resolveOptions = (
+  ctx: LibreRouting,
+  options: AnnotationPluginOptions
+): AnnotationPluginOptions => {
+  return {
+    ...options,
+    routeLayerId: ctx.getUniqueName(options.routeLayerId),
+  };
 };
 
 export class AnnotationPlugin implements LibreRoutingPlugin {
@@ -53,6 +63,7 @@ export class AnnotationPlugin implements LibreRoutingPlugin {
   }
 
   onAdd(ctx: LibreRouting) {
+    this.options = resolveOptions(ctx, this.options);
     const debounced = debounce(() => this.recalculate(), 200, false);
 
     this.ctx = ctx;

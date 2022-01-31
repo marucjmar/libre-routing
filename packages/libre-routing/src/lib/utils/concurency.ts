@@ -1,14 +1,14 @@
 export function debounce(func, wait, immediate) {
-  var timeout;
+  let timeout;
   return function () {
     // @ts-ignore
-    var context = this,
+    const context = this,
       args = arguments;
-    var later = function () {
+    const later = function () {
       timeout = null;
       if (!immediate) func.apply(context, args);
     };
-    var callNow = immediate && !timeout;
+    const callNow = immediate && !timeout;
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
@@ -16,20 +16,20 @@ export function debounce(func, wait, immediate) {
 }
 
 export function throttle(func, wait, options) {
-  var context, args, result;
-  var timeout = null;
-  var previous = 0;
+  let context, args, result;
+  let timeout = null;
+  let previous = 0;
   if (!options) options = {};
-  var later = function () {
+  const later = function () {
     previous = options.leading === false ? 0 : Date.now();
     timeout = null;
     result = func.apply(context, args);
     if (!timeout) context = args = null;
   };
   return function () {
-    var now = Date.now();
+    const now = Date.now();
     if (!previous && options.leading === false) previous = now;
-    var remaining = wait - (now - previous);
+    const remaining = wait - (now - previous);
     // @ts-ignore
 
     context = this;

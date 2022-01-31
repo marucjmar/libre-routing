@@ -1,4 +1,4 @@
-import { LngLatLike, Map, MapMouseEvent } from 'maplibre-gl';
+import { Map, MapMouseEvent } from 'maplibre-gl';
 import {
   featureCollection,
   FeatureCollection,
@@ -6,22 +6,37 @@ import {
   point,
 } from '@turf/helpers';
 
-import { LibreRouting } from '../../libre-routing';
 import { LibreRoutingConsts } from '../../consts';
 import { throttle } from '../../utils/concurency';
 import { Dispatcher } from '../../utils/dispatcher';
+
 import type { LibreRoutingPlugin } from '..';
+import type { LngLatPosition, LibreRouting } from '../../libre-routing';
 
 type MousePluginOptions = {
   calculateOnFly: boolean;
   routeLayerId: string;
   waypointsLayerId: string;
+  pointLayerId: string;
 };
 
 const defaultConfig: MousePluginOptions = {
   calculateOnFly: true,
   routeLayerId: LibreRoutingConsts.RouteLayerId,
   waypointsLayerId: LibreRoutingConsts.WaypointsLayerId,
+  pointLayerId: 'route-point',
+};
+
+const resolveOptions = (
+  ctx: LibreRouting,
+  options: MousePluginOptions
+): MousePluginOptions => {
+  return {
+    ...options,
+    routeLayerId: ctx.getUniqueName(options.routeLayerId),
+    waypointsLayerId: ctx.getUniqueName(options.waypointsLayerId),
+    pointLayerId: ctx.getUniqueName(options.pointLayerId),
+  };
 };
 
 export class MousePlugin implements LibreRoutingPlugin {
@@ -43,7 +58,7 @@ export class MousePlugin implements LibreRoutingPlugin {
   private dispatcher: Dispatcher;
   private recalculateHandler = throttle(
     () => {
-      this.ctx!.recalculateRoute().catch(() => null);
+      this.ctx.recalculateRoute().catch(() => null);
     },
     100,
     { leading: true, trailing: true }
@@ -73,15 +88,19 @@ export class MousePlugin implements LibreRoutingPlugin {
   public onAdd(ctx: LibreRouting) {
     this.ctx = ctx;
     this.map = ctx.map;
+    this.options = resolveOptions(ctx, this.options);
 
     ctx.on('waypoints', (waypoints) => (this.waypoints = waypoints));
 
-    this.map.addSource('point', { type: 'geojson', data: this.point });
+    this.map.addSource(this.options.pointLayerId, {
+      type: 'geojson',
+      data: this.point,
+    });
 
     this.map.addLayer({
-      id: 'point',
+      id: this.options.pointLayerId,
       type: 'circle',
-      source: 'point',
+      source: this.options.pointLayerId,
       layout: {
         visibility: 'visible',
       },
@@ -99,7 +118,12 @@ export class MousePlugin implements LibreRoutingPlugin {
     this.map.on('mousemove', this.mapMoveHandler);
   }
 
-  public onRemove() {}
+  public onRemove() {
+    this.map.off('mousedown', this.mousedownHandler);
+    this.map.off('mouseup', this.mouseupHandler);
+    this.map.off('click', this.mapClickHandler);
+    this.map.off('mousemove', this.mapMoveHandler);
+  }
 
   private onMapClick(e: MapMouseEvent) {
     const features = this.map.queryRenderedFeatures(e.point, {
@@ -119,7 +143,7 @@ export class MousePlugin implements LibreRoutingPlugin {
     if (this.waypoints.length >= 2) return;
 
     this.addWaypoint(
-      e.lngLat.toArray() as LngLatLike,
+      e.lngLat.toArray() as LngLatPosition,
       this.waypoints.length - 1
     );
   }
@@ -127,7 +151,7 @@ export class MousePlugin implements LibreRoutingPlugin {
   private onMapMove(e: MapMouseEvent) {
     if (this.waypointOrigin != null) {
       this.updateWaypoint(
-        e.lngLat.toArray() as LngLatLike,
+        e.lngLat.toArray() as LngLatPosition,
         this.waypointOrigin
       );
 
@@ -148,14 +172,25 @@ export class MousePlugin implements LibreRoutingPlugin {
     if (waypoint) {
       this.map.getCanvas().style.cursor = 'pointer';
 
-      this.map.setLayoutProperty('point', 'visibility', 'none');
+      this.map.setLayoutProperty(
+        this.options.pointLayerId,
+        'visibility',
+        'none'
+      );
 
       return;
     }
 
     if (!features.length || waypoint || !route) {
-      if (this.map.getLayoutProperty('point', 'visibility') === 'visible') {
-        this.map.setLayoutProperty('point', 'visibility', 'none');
+      if (
+        this.map.getLayoutProperty(this.options.pointLayerId, 'visibility') ===
+        'visible'
+      ) {
+        this.map.setLayoutProperty(
+          this.options.pointLayerId,
+          'visibility',
+          'none'
+        );
 
         this.map.getCanvas().style.cursor = '';
       }
@@ -164,21 +199,34 @@ export class MousePlugin implements LibreRoutingPlugin {
     }
 
     if (route.properties.selected) {
-      if (this.map.getLayoutProperty('point', 'visibility') !== 'visible') {
+      if (
+        this.map.getLayoutProperty(this.options.pointLayerId, 'visibility') !==
+        'visible'
+      ) {
         this.map.getCanvas().style.cursor = 'pointer';
 
-        this.map.setLayoutProperty('point', 'visibility', 'visible');
+        this.map.setLayoutProperty(
+          this.options.pointLayerId,
+          'visibility',
+          'visible'
+        );
       }
 
       this.point.features[0].geometry.coordinates = e.lngLat.toArray();
 
-      (this.map.getSource('point') as any).setData(this.point);
+      (this.map.getSource(this.options.pointLayerId) as any).setData(
+        this.point
+      );
 
       return;
     } else {
       this.map.getCanvas().style.cursor = 'pointer';
 
-      this.map.setLayoutProperty('point', 'visibility', 'none');
+      this.map.setLayoutProperty(
+        this.options.pointLayerId,
+        'visibility',
+        'none'
+      );
     }
   }
 
@@ -209,7 +257,11 @@ export class MousePlugin implements LibreRoutingPlugin {
       this.map.dragPan.disable();
       this.waypointOrigin = route.properties.waypoint + 1;
 
-      this.map.setLayoutProperty('point', 'visibility', 'none');
+      this.map.setLayoutProperty(
+        this.options.pointLayerId,
+        'visibility',
+        'none'
+      );
 
       this.addWaypoint(
         e.lngLat.toArray() as any,
@@ -220,11 +272,11 @@ export class MousePlugin implements LibreRoutingPlugin {
 
   private onMouseup(e) {
     this.map.dragPan.enable();
-    this.map.setLayoutProperty('point', 'visibility', 'none');
+    this.map.setLayoutProperty(this.options.pointLayerId, 'visibility', 'none');
 
     if (this.waypointOrigin != null) {
       this.updateWaypoint(
-        e.lngLat.toArray() as LngLatLike,
+        e.lngLat.toArray() as LngLatPosition,
         this.waypointOrigin
       );
 
@@ -248,7 +300,7 @@ export class MousePlugin implements LibreRoutingPlugin {
     this.dispatcher.off(event, callback);
   }
 
-  private addWaypoint(pos: LngLatLike, waypointId: number) {
+  private addWaypoint(pos: LngLatPosition, waypointId: number) {
     this.ctx.addWaypoint(pos, waypointId);
 
     if (!this.dirty || this.options.calculateOnFly) {
@@ -256,7 +308,7 @@ export class MousePlugin implements LibreRoutingPlugin {
     }
   }
 
-  private updateWaypoint(pos: LngLatLike, waypointId: number) {
+  private updateWaypoint(pos: LngLatPosition, waypointId: number) {
     const updateResult = this.ctx.updateWaypoint(pos, waypointId);
 
     if (updateResult && (!this.dirty || this.options.calculateOnFly)) {

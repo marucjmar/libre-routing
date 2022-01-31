@@ -34,7 +34,11 @@ export class AppComponent implements AfterViewInit {
         style: `https://assets.vector.hereapi.com/styles/berlin/base/mapbox/tilezen?apikey=${environment.hereApiKey}`,
       });
 
-      const dataProvider = new HereProvider({ apiKey: environment.hereApiKey });
+      const dataProvider = new HereProvider({
+        apiKey: environment.hereApiKey,
+        selectRouteStrategy: 'cheapest',
+        transportMode: 'truck',
+      });
       const routing = new LibreRouting({
         alternatives: 2,
         dataProvider,

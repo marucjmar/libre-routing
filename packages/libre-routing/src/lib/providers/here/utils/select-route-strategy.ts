@@ -23,9 +23,8 @@ export function selectRouteByStrategy(
     const cheapest = summaryRoutes
       .filter((s) => s.cost != null)
       .reduce(function (prev, current) {
-        // @ts-ignore
         return prev?.cost < current?.cost ? prev : current;
-      });
+      }, null);
 
     return cheapest?.id;
   }
